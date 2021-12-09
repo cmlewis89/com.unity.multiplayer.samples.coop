@@ -5,9 +5,8 @@ using NUnit.Framework;
 using Unity.Netcode;
 using UnityEditor;
 using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.GameCenter;
 
-namespace Tests
+namespace Unity.Multiplayer.Samples.BossRoom.RuntimeTests
 {
     public class BossRoomPackageCustomTest : IPrebuildSetup
     {

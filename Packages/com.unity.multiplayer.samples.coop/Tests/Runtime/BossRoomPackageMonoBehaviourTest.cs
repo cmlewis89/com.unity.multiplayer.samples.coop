@@ -2,7 +2,7 @@
 using UnityEngine.TestTools;
 using System.Collections;
 
-namespace Tests
+namespace Unity.Multiplayer.Samples.BossRoom.RuntimeTests
 {
     public class BossRoomPackageMonoBehaviourTest
     {
