@@ -1,0 +1,34 @@
+{% metadata_file .yamato/project.metafile %}
+---
+          
+# Currently, we need to have a trigger to updated badges
+# Only package badges currently exist
+badges_test_trigger:
+  name: Badges Tests Trigger
+  agent:
+    type: Unity::VM
+    image: package-ci/ubuntu:stable
+    flavor: b1.small
+  commands:
+    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
+    - upm-ci package izon -t
+  artifacts:
+    logs:
+      paths:
+        - "upm-ci~/test-results/**/*"
+    packages:
+      paths:
+        - "upm-ci~/packages/**/*"
+  dependencies:
+{% for project in projects -%}
+{% for package in project.packages -%}
+{% if project.validate == "true" -%}
+    - .yamato/project-tests.yml#validate_{{ package.name }}_{{ test_platforms.first.name }}_{{ validation_editor }}
+{% endif -%}
+{% for editor in project.test_editors -%}
+{% for platform in test_platforms -%}
+    - .yamato/package-tests.yml#test_{{ project.name }}_{{ package.name }}_{{ editor }}_{{ platform.name }}
+{% endfor -%}
+{% endfor -%}
+{% endfor -%}
+{% endfor -%}
