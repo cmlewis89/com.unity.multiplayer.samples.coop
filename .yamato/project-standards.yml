@@ -12,7 +12,4 @@ standards:
     - pip install unity-downloader-cli --upgrade --index-url https://artifactory.prd.it.unity3d.com/artifactory/api/pypi/pypi/simple
     - unity-downloader-cli -u {{ projects.first.test_editors.first }} -c editor --wait --fast
     - .Editor/Unity -batchmode -nographics -logFile - -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -projectPath {{ projects.first.path }} -quit
-    # download dotnet format
-    - dotnet format solution.slnf --verify-no-changes
-  triggers:
-    expression: pull_request.target eq "main"
+    - dotnet run --project dotnet-tools/netcode.standards -- --project={{ projects.first.path }} --check
