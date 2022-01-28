@@ -13,6 +13,6 @@ standards:
     - unity-downloader-cli -u {{ projects.first.test_editors.first }} -c editor --wait --fast
     - .Editor/Unity -batchmode -nographics -logFile - -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -projectPath {{ projects.first.path }} -quit
     # download dotnet format
-    - dotnet format --project={{ projects.first.path }} --verify-no-changes
+    - dotnet format --verify-no-changes
   triggers:
-    expression: pull_request.target eq "master"
+    expression: pull_request.target eq "main"
