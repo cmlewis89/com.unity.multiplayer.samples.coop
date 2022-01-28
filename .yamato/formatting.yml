@@ -1,45 +1,8 @@
 {% metadata_file .yamato/project.metafile %}
-
-# from internal doc on how to modify external repos; doesn't work (git@github.cds.internal.unity3d.com: Permission denied (publickey))
-
-format_win:
-  name: Formatting
-  agent:
-    type: Unity::VM
-    image: cloud/win10-dotnet:latest
-    flavor: b1.small
-  commands:
-    - git clone --depth 1 --branch stable git@github.cds.internal.unity3d.com:unity/unity-meta.git
-    - perl ~/unity-meta/Tools/Format/format.pl --dry-run .
-  timeout: 1
-  
-
-# from https://github.com/Unity-Technologies/Graphics/blob/master/.yamato/_formatting.yml; this works
-formatting:
-  name: Formatting
-  agent:
-    type: Unity::VM
-    image: package-ci/ubuntu:v1.3.1-719011
-    flavor: b1.small
-  commands:
-    - "echo -e \"[extensions]\nlargefiles=\n\" > ~/.hgrc"
-    - hg clone -u beta http://hg-mirror-slo.hq.unity3d.com/unity-extra/unity-meta ~/unity-meta
-    - perl ~/unity-meta/Tools/Format/format.pl --nobackups .
-    - git diff --output ./format.patch
-    - cat ./format.patch
-    - | # Checking if there is a diff, to fail the job if yes (-s check means does the file contain something)
-      if [ -s format.patch ]; then exit 1; fi
-  timeout: 1
-  triggers:
-    expression: pull_request.target eq "master"
-  artifacts:
-    diff:
-      paths:
-        - format.patch
         
 #custom!
 
-dotnet_formatting:
+standards_{{ projects.first.name }}:
   name: dotnet Formatting
   agent:
     type: Unity::VM
