@@ -26,7 +26,7 @@ test_platforms:
 # for job ids, so it should not contain spaces/non-supported characters
 projects:
   - name: com.unity.multiplayer.samples.coop
-    path: com.unity.multiplayer.samples.coop
+    path: 
     validate: true
     # Packages within a project that will be tested
     packages:
