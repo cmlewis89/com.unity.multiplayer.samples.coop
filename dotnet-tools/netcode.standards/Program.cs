@@ -18,8 +18,11 @@ internal static class Program
         string pattern = "*.sln",
         string verbosity = "normal")
     {
-		project = "";
-		
+        if (string.IsNullOrEmpty(project))
+        {
+            project = Directory.GetCurrentDirectory();
+        }
+
         if (check && fix)
         {
             Console.WriteLine($"FAILED: Please use --{nameof(check)} or --{nameof(fix)} individually, not both at the same time");
