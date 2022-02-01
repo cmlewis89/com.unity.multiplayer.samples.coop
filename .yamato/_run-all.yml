@@ -1,0 +1,12 @@
+{% metadata_file .yamato/project.metafile %}
+---
+
+all_project_tests:
+  name: Run All Project Tests
+{% for platform in test_platforms -%}
+{% for project in projects -%}
+{% for editor in project.test_editors -%}
+    - .yamato/project-tests.yml#test_{{ projects.first.name }}_{{ editor }}_{{ platform.name }}
+{% endfor -%}
+{% endfor -%}
+{% endfor -%}

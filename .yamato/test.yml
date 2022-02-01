@@ -1,0 +1,12 @@
+{% metadata_file .yamato/project.metafile %}
+---
+standards:
+  name: Standards Check {{ projects.first.name }}
+  agent:
+    type: Unity::VM
+    image: desktop/logging-testing-linux:v0.1.2-926285
+    flavor: b1.medium
+  commands:  
+    - dotnet --version
+    - dotnet format --version
+    - dotnet run --project dotnet-tools/netcode.standards -- --project={{ projects.first.path }} --check
