@@ -37,11 +37,11 @@ pull_request_trigger:
 pull_request_trigger_upm:
   name: Pull Request Trigger (main, develop, & release branches)
   dependencies:
-    { % for project in projects -% }
-      { % for platform in test_platforms -% }
-        - .yamato/project-tests.yml#test_{{ project.name }}_{{ project.test_editors.first }}_{{ platform.name }}
-      { % endfor -% }
-    { % endfor -% }
+{ % for project in projects -% }
+{ % for platform in test_platforms -% }
+    - .yamato/project-tests.yml#test_{{ project.name }}_{{ project.test_editors.first }}_{{ platform.name }}
+{ % endfor -% }
+{ % endfor -% }
   triggers:
     cancel_old_ci: true
     pull_requests:
