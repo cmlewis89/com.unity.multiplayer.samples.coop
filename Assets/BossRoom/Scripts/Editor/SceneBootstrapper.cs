@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
+#if false
 namespace Unity.Multiplayer.Samples.BossRoom.Editor
 {
     /// <summary>
@@ -159,3 +160,4 @@ namespace Unity.Multiplayer.Samples.BossRoom.Editor
         }
     }
 }
+#endif
