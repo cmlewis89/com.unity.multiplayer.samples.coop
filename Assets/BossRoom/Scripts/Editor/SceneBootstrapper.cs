@@ -2,7 +2,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-#if false
 namespace Unity.Multiplayer.Samples.BossRoom.Editor
 {
     /// <summary>
@@ -100,6 +99,16 @@ namespace Unity.Multiplayer.Samples.BossRoom.Editor
 
         static void EditorApplicationOnplayModeStateChanged(PlayModeStateChange obj)
         {
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+            {
+                var loadedScene = EditorSceneManager.GetSceneAt(i);
+
+                if (loadedScene.name.Contains("InitTestScene"))
+                {
+                    return;
+                }
+            }
+
             if (!LoadBootstrapScene)
             {
                 return;
@@ -160,4 +169,3 @@ namespace Unity.Multiplayer.Samples.BossRoom.Editor
         }
     }
 }
-#endif
