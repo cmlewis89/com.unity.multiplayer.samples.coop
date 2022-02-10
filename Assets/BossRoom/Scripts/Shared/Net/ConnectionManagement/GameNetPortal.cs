@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Netcode.Transports.PhotonRealtime;
 using Unity.Multiplayer.Samples.BossRoom.Client;
 using Unity.Multiplayer.Samples.BossRoom.Server;
@@ -26,6 +27,7 @@ namespace Unity.Multiplayer.Samples.BossRoom
         IpHost = 0, // The server is hosted directly and clients can join by ip address.
         Relay = 1, // The server is hosted over a relay server and clients join by entering a room name.
         UnityRelay = 2, // The server is hosted over a Unity Relay server and clients join by entering a join code.
+        Unset = -1, // The hosting mode is not set yet.
     }
 
     [Serializable]
@@ -63,6 +65,11 @@ namespace Unity.Multiplayer.Samples.BossRoom
         NetworkManager m_NetworkManager;
 
         public NetworkManager NetManager => m_NetworkManager;
+
+        [SerializeField]
+        AvatarRegistry m_AvatarRegistry;
+
+        public AvatarRegistry AvatarRegistry => m_AvatarRegistry;
 
         /// <summary>
         /// the name of the player chosen at game start
@@ -121,7 +128,10 @@ namespace Unity.Multiplayer.Samples.BossRoom
             if (clientId == NetManager.LocalClientId)
             {
                 OnNetworkReady();
-                NetManager.SceneManager.OnSceneEvent += OnSceneEvent;
+                if (NetManager.IsServer)
+                {
+                    NetManager.SceneManager.OnSceneEvent += OnSceneEvent;
+                }
             }
         }
 
@@ -152,7 +162,7 @@ namespace Unity.Multiplayer.Samples.BossRoom
         /// <param name="port">The port to connect to. </param>
         public void StartHost(string ipaddress, int port)
         {
-            var chosenTransport  = NetworkManager.Singleton.gameObject.GetComponent<TransportPicker>().IpHostTransport;
+            var chosenTransport = NetworkManager.Singleton.gameObject.GetComponent<TransportPicker>().IpHostTransport;
             NetworkManager.Singleton.NetworkConfig.NetworkTransport = chosenTransport;
 
             // Note: In most cases, this switch case shouldn't be necessary. It becomes necessary when having to deal with multiple transports like this
@@ -164,18 +174,17 @@ namespace Unity.Multiplayer.Samples.BossRoom
                     unetTransport.ServerListenPort = port;
                     break;
                 case UnityTransport unityTransport:
-                    unityTransport.SetConnectionData(ipaddress, (ushort) port);
+                    unityTransport.SetConnectionData(ipaddress, (ushort)port);
                     break;
                 default:
                     throw new Exception($"unhandled IpHost transport {chosenTransport.GetType()}");
             }
-
-            NetManager.StartHost();
+            StartHost();
         }
 
-        public void StartPhotonRelayHost(string roomName)
+        public void StartPhotonRelayHost(string roomName, CancellationToken cancellationToken)
         {
-            var chosenTransport  = NetworkManager.Singleton.gameObject.GetComponent<TransportPicker>().RelayTransport;
+            var chosenTransport = NetworkManager.Singleton.gameObject.GetComponent<TransportPicker>().RelayTransport;
             NetworkManager.Singleton.NetworkConfig.NetworkTransport = chosenTransport;
 
             switch (chosenTransport)
@@ -187,12 +196,15 @@ namespace Unity.Multiplayer.Samples.BossRoom
                     throw new Exception($"unhandled relay transport {chosenTransport.GetType()}");
             }
 
-            NetManager.StartHost();
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                StartHost();
+            }
         }
 
-        public async void StartUnityRelayHost()
+        public async void StartUnityRelayHost(CancellationToken cancellationToken)
         {
-            var chosenTransport  = NetworkManager.Singleton.gameObject.GetComponent<TransportPicker>().UnityRelayTransport;
+            var chosenTransport = NetworkManager.Singleton.gameObject.GetComponent<TransportPicker>().UnityRelayTransport;
             NetworkManager.Singleton.NetworkConfig.NetworkTransport = chosenTransport;
 
             switch (chosenTransport)
@@ -211,12 +223,10 @@ namespace Unity.Multiplayer.Samples.BossRoom
                         }
 
                         // we now need to get the joinCode?
-                        var serverRelayUtilityTask = RelayUtility.AllocateRelayServerAndGetJoinCode(k_MaxUnityRelayConnections);
+                        var serverRelayUtilityTask = UnityRelayUtilities.AllocateRelayServerAndGetJoinCode(k_MaxUnityRelayConnections);
                         await serverRelayUtilityTask;
                         // we now have the info from the relay service
-                        var (ipv4Address, port, allocationIdBytes, connectionData, key, joinCode) = serverRelayUtilityTask.Result;
-
-                        RelayJoinCode.Code = joinCode;
+                        var (ipv4Address, port, allocationIdBytes, connectionData, key, _) = serverRelayUtilityTask.Result;
 
                         // we now need to set the RelayCode somewhere :P
                         utp.SetRelayServerData(ipv4Address, port, allocationIdBytes, key, connectionData);
@@ -232,6 +242,14 @@ namespace Unity.Multiplayer.Samples.BossRoom
                     throw new Exception($"unhandled relay transport {chosenTransport.GetType()}");
             }
 
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                StartHost();
+            }
+        }
+
+        void StartHost()
+        {
             NetManager.StartHost();
         }
 
@@ -241,8 +259,13 @@ namespace Unity.Multiplayer.Samples.BossRoom
         /// </summary>
         public void RequestDisconnect()
         {
+            if (NetManager.IsServer)
+            {
+                NetManager.SceneManager.OnSceneEvent -= OnSceneEvent;
+            }
             m_ClientPortal.OnUserDisconnectRequest();
             m_ServerPortal.OnUserDisconnectRequest();
+            SessionManager<SessionPlayerData>.Instance.OnUserDisconnectRequest();
             NetManager.Shutdown();
         }
     }

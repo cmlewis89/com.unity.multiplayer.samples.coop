@@ -24,17 +24,38 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
 
         public override void OnNetworkSpawn()
         {
-            if (!IsServer)
+            if (IsServer)
+            {
+                s_ActivePlayers.Add(m_CachedServerCharacter);
+            }
+            else
             {
                 enabled = false;
             }
 
-            s_ActivePlayers.Add(m_CachedServerCharacter);
         }
 
         void OnDisable()
         {
             s_ActivePlayers.Remove(m_CachedServerCharacter);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer)
+            {
+                var movementTransform = m_CachedServerCharacter.Movement.transform;
+                SessionPlayerData? sessionPlayerData = SessionManager<SessionPlayerData>.Instance.GetPlayerData(OwnerClientId);
+                if (sessionPlayerData.HasValue)
+                {
+                    var playerData = sessionPlayerData.Value;
+                    playerData.PlayerPosition = movementTransform.position;
+                    playerData.PlayerRotation = movementTransform.rotation;
+                    playerData.CurrentHitPoints = m_CachedServerCharacter.NetState.HitPoints;
+                    playerData.HasCharacterSpawned = true;
+                    SessionManager<SessionPlayerData>.Instance.SetPlayerData(OwnerClientId, playerData);
+                }
+            }
         }
 
         /// <summary>

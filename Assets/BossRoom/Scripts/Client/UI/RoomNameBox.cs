@@ -4,10 +4,16 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using TMPro;
 using Unity.Netcode;
+using UnityEngine.UI;
 
 public class RoomNameBox : MonoBehaviour
 {
-    [SerializeField] TextMeshProUGUI m_RoomNameText;
+    [SerializeField]
+    TextMeshProUGUI m_RoomNameText;
+    [SerializeField]
+    Button m_CopyToClipboardButton;
+
+    string m_RoomName;
 
     bool m_ConnectionFinished = false;
 
@@ -16,19 +22,31 @@ public class RoomNameBox : MonoBehaviour
         Assert.IsNotNull(m_RoomNameText, $"{nameof(m_RoomNameText)} not assigned!");
 
         var transport = NetworkManager.Singleton.NetworkConfig.NetworkTransport;
-
+        bool isUsingRelay = true;
         switch (transport)
         {
             case PhotonRealtimeTransport realtimeTransport:
                 m_RoomNameText.text = $"Loading room key...";
                 break;
             case UnityTransport utp:
-                m_RoomNameText.text = $"Loading join code...";
+                if (utp.Protocol == UnityTransport.ProtocolType.RelayUnityTransport)
+                {
+                    m_RoomNameText.text = $"Loading join code...";
+                }
+                else
+                {
+                    isUsingRelay = false;
+                }
                 break;
             default:
-                // RoomName should only be displayed when using relay.
-                Destroy(gameObject);
+                isUsingRelay = false;
                 break;
+        }
+
+        if (!isUsingRelay)
+        {
+            // RoomName should only be displayed when using relay.
+            Destroy(gameObject);
         }
     }
 
@@ -47,15 +65,33 @@ public class RoomNameBox : MonoBehaviour
                 string.IsNullOrEmpty(realtimeTransport.Client.CloudRegion) == false)
             {
                 string roomName = $"{realtimeTransport.Client.CloudRegion.ToUpper()}_{realtimeTransport.RoomName}";
-                m_RoomNameText.text = $"Room Name: {roomName}";
-                m_ConnectionFinished = true;
+                ConnectionFinished(roomName);
             }
             else if (transport != null && transport is UnityTransport utp &&
-                     !string.IsNullOrEmpty(RelayJoinCode.Code))
+                     !string.IsNullOrEmpty(UnityRelayUtilities.JoinCode))
             {
-                m_RoomNameText.text = RelayJoinCode.Code;
-                m_ConnectionFinished = true;
+                ConnectionFinished(UnityRelayUtilities.JoinCode);
             }
+        }
+    }
+
+    void ConnectionFinished(string roomName)
+    {
+        m_RoomName = roomName;
+        m_RoomNameText.text = $"Room Name: {m_RoomName}";
+        m_ConnectionFinished = true;
+        m_CopyToClipboardButton.gameObject.SetActive(true);
+    }
+
+    public void CopyToClipboard()
+    {
+        if (m_ConnectionFinished)
+        {
+            GUIUtility.systemCopyBuffer = m_RoomName;
+        }
+        else
+        {
+            Debug.Log("Connection not finished, can't copy to clipboard yet.");
         }
     }
 }

@@ -1,5 +1,7 @@
 using System;
+using System.Threading;
 using Unity.Multiplayer.Samples.BossRoom.Client;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -66,10 +68,12 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
                 (string connectInput, int connectPort, string playerName, OnlineMode onlineMode) =>
             {
                 m_GameNetPortal.PlayerName = playerName;
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
                 switch (onlineMode)
                 {
                     case OnlineMode.Relay:
-                        m_GameNetPortal.StartPhotonRelayHost(connectInput);
+                        m_GameNetPortal.StartPhotonRelayHost(connectInput, cancellationTokenSource.Token);
                         break;
 
                     case OnlineMode.IpHost:
@@ -78,9 +82,16 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
 
                     case OnlineMode.UnityRelay:
                         Debug.Log("Unity Relay Host clicked");
-                        m_GameNetPortal.StartUnityRelayHost();
+                        m_GameNetPortal.StartUnityRelayHost(cancellationTokenSource.Token);
                         break;
                 }
+                m_ResponsePopup.SetupNotifierDisplay("Starting host", "Attempting to Start host...", true, false, () =>
+                {
+                    // Shutdown NetworkManager in case it started the hosting process
+                    m_GameNetPortal.RequestDisconnect();
+                    // This token is used with Photon Relay and Unity Relay to prevent starting the host if it hasn't yet
+                    cancellationTokenSource.Cancel();
+                });
             }, k_DefaultIP, k_ConnectPort);
         }
 
@@ -90,11 +101,12 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
                 (string connectInput, int connectPort, string playerName, OnlineMode onlineMode) =>
             {
                 m_GameNetPortal.PlayerName = playerName;
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
                 switch (onlineMode)
                 {
                     case OnlineMode.Relay:
-                        if (ClientGameNetPortal.StartClientRelayMode(m_GameNetPortal, connectInput, out string failMessage) == false)
+                        if (ClientGameNetPortal.StartClientRelayMode(m_GameNetPortal, connectInput, out string failMessage, cancellationTokenSource.Token) == false)
                         {
                             m_ResponsePopup.SetupNotifierDisplay("Connection Failed", failMessage, false, true);
                             return;
@@ -107,10 +119,16 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
 
                     case OnlineMode.UnityRelay:
                         Debug.Log($"Unity Relay Client, join code {connectInput}");
-                        m_ClientNetPortal.StartClientUnityRelayModeAsync(m_GameNetPortal, connectInput);
+                        m_ClientNetPortal.StartClientUnityRelayModeAsync(m_GameNetPortal, connectInput, cancellationTokenSource.Token);
                         break;
                 }
-                m_ResponsePopup.SetupNotifierDisplay("Connecting", "Attempting to Join...", true, false);
+                m_ResponsePopup.SetupNotifierDisplay("Connecting", "Attempting to Join...", true, false, () =>
+                {
+                    // Shutdown NetworkManager in case it started the connection process
+                    m_GameNetPortal.RequestDisconnect();
+                    // This token is used with Photon Relay and Unity Relay to prevent starting the connection if it hasn't yet
+                    cancellationTokenSource.Cancel();
+                });
             }, k_DefaultIP, k_ConnectPort);
         }
 
@@ -141,7 +159,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
         /// <param name="connecting">pass true if this is being called in response to a connect finishing.</param>
         private void ConnectStatusToMessage(ConnectStatus status, bool connecting)
         {
-            switch(status)
+            switch (status)
             {
                 case ConnectStatus.Undefined:
                 case ConnectStatus.UserRequestedDisconnect:
@@ -150,7 +168,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
                     m_ResponsePopup.SetupNotifierDisplay("Connection Failed", "The Host is full and cannot accept any additional connections", false, true);
                     break;
                 case ConnectStatus.Success:
-                    if(connecting) { m_ResponsePopup.SetupNotifierDisplay("Success!", "Joining Now", false, true); }
+                    if (connecting) { m_ResponsePopup.SetupNotifierDisplay("Success!", "Joining Now", false, true); }
                     break;
                 case ConnectStatus.LoggedInAgain:
                     m_ResponsePopup.SetupNotifierDisplay("Connection Failed", "You have logged in elsewhere using the same account", false, true);
@@ -189,7 +207,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.Visual
 
         private void OnRelayJoinFailed(string message)
         {
-            PushConnectionResponsePopup("Unity Relay: Join Failed", $"{message}", true, true);
+            PushConnectionResponsePopup("Unity Relay: Join Failed", $"{message}", false, true);
         }
 
         private void OnDestroy()

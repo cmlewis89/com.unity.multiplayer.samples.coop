@@ -23,7 +23,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
         /// The Character's ActionPlayer. This is mainly exposed for use by other Actions. In particular, users are discouraged from
         /// calling 'PlayAction' directly on this, as the ServerCharacter has certain game-level checks it performs in its own wrapper.
         /// </summary>
-        public ActionPlayer RunningActions {  get { return m_ActionPlayer;  } }
+        public ActionPlayer RunningActions { get { return m_ActionPlayer; } }
 
         [SerializeField]
         [Tooltip("If set to false, an NPC character will be denied its brain (won't attack or chase players)")]
@@ -85,8 +85,6 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
                     var startingAction = new ActionRequestData() { ActionTypeEnum = m_StartingAction };
                     PlayAction(ref startingAction);
                 }
-
-                NetState.HitPoints = NetState.CharacterClass.BaseHP.Value;
             }
         }
 
@@ -191,6 +189,14 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
             }
             else
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                // Don't apply damage if god mode is on
+                if (NetState.NetworkLifeState.IsGodMode.Value)
+                {
+                    return;
+                }
+#endif
+
                 m_ActionPlayer.OnGameplayActivity(Action.GameplayActivity.AttackedByEnemy);
                 float damageMod = m_ActionPlayer.GetBuffedValue(Action.BuffableValue.PercentDamageReceived);
                 HP = (int)(HP * damageMod);
@@ -198,9 +204,9 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
                 serverAnimationHandler.NetworkAnimator.SetTrigger("HitReact1");
             }
 
-            NetState.HitPoints = Mathf.Min(NetState.CharacterClass.BaseHP.Value, NetState.HitPoints+HP);
+            NetState.HitPoints = Mathf.Clamp(NetState.HitPoints + HP, 0, NetState.CharacterClass.BaseHP.Value);
 
-            if( m_AIBrain != null )
+            if (m_AIBrain != null)
             {
                 //let the brain know about the modified amount of damage we received.
                 m_AIBrain.ReceiveHP(inflicter, HP);
