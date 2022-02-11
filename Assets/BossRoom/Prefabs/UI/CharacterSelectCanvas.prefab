@@ -3358,6 +3358,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 3f580c74a6c0bb242b891eb846906d69, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract0
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -3619,6 +3623,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 37a2821aee94baa40981a9ddb1d4d9a6, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract6
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -3778,6 +3786,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: a43b78fa7b1c50440bba253a7bacac4f, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract5
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -4047,6 +4059,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: ba80024120c0e9d419c2bbfeb0c58a73, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract4
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -4206,6 +4222,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 8d7c11a447fdf334b8474b14624afeb7, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract2
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -4479,6 +4499,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 12f9c3c6ba4d72449b5b1e6e63875413, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract3
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -4691,6 +4715,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 4966e5f7046669d4287336ccc27c9fae, type: 3}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract7
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
@@ -4858,6 +4886,10 @@ PrefabInstance:
       propertyPath: m_FontData.m_Font
       value: 
       objectReference: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    - target: {fileID: 3542752144213200880, guid: ff848390065bf914fb60582f4d872815, type: 3}
+      propertyPath: m_Name
+      value: ClickInteract1
+      objectReference: {fileID: 0}
     - target: {fileID: 4288405572601731449, guid: ff848390065bf914fb60582f4d872815, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.25
