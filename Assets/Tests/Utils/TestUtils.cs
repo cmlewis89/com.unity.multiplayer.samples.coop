@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Unity.Multiplayer.Samples.BossRoom.TestUtils
 {
-    public class TestUtils
+    public abstract class TestUtils
     {
         public static void ClickButtonByName(string name)
         {

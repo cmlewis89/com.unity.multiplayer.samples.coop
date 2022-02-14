@@ -17,6 +17,8 @@ namespace Unity.Multiplayer.Samples.BossRoom.RuntimeTests
 
         const string k_CharSelectScenePath = "Assets/BossRoom/Scenes/CharSelect.unity";
 
+        const string k_BossRoomScenePath = "Assets/BossRoom/Scenes/BossRoom.unity";
+
         [UnityTest]
         public IEnumerator NetworkManager_HostSmokeTest_True()
         {
@@ -44,7 +46,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.RuntimeTests
             TestUtils.TestUtils.ClickButtonByName("Host Btn");
 
             // if button is successfully clicked, a confirmation popup will appear; wait a frame for it to pop up
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
 
             TestUtils.TestUtils.ClickButtonByName("Confirmation Button");
 
@@ -66,23 +68,47 @@ namespace Unity.Multiplayer.Samples.BossRoom.RuntimeTests
             TestUtils.TestUtils.ClickButtonByName("ClickInteract0");
 
             // selecting a class will enable the "Ready" button, next frame it is selectable
-            yield return null;
+            yield return new WaitForFixedUpdate();
 
             // hit ready
             TestUtils.TestUtils.ClickButtonByName("Ready Btn");
 
             // selecting ready as host with no other party members will load BossRoom scene
 
-            var waitUntilBossRoomSceneLoaded = new WaitForSceneLoad("BossRoom");
+            var waitUntilBossRoomSceneLoaded = new WaitForSceneLoad(k_BossRoomScenePath);
 
             yield return waitUntilBossRoomSceneLoaded;
 
             Assert.That(!waitUntilBossRoomSceneLoaded.timedOut);
 
-            // once loaded into BossRoom scene, disconnect
+            // once loaded into BossRoom scene, wait 5 seconds and disconnect
+            yield return new WaitForSeconds(5f);
 
+            TestUtils.TestUtils.ClickButtonByName("Quit Button");
 
-            yield return new WaitForSeconds(10f);
+            // confirm button will be active next frame
+
+            // NOTE: always wait until next FixedUpdate()
+            // according to doc (link here): waiting for FixedUpdate will be the in the sequence of events the ideal
+            // place to invoke UI elements (since according to the Unity events, where Update is polled comes right
+            // after FixedUpdate)
+            // can use this or null
+
+            yield return null;
+
+            TestUtils.TestUtils.ClickButtonByName("Confirm Button");
+
+            // wait for NetworkUpdate?
+            yield return new WaitForSeconds(1f);
+
+            Assert.That(!NetworkManager.Singleton.IsListening, "NetworkManager not fully shut down!");
+
+            // MainMenu is loaded as soon as a shutdown is encountered, validate it is loaded
+            var waitUntilMainMenuSceneLoadedOnShutdown = new WaitForSceneLoad(k_MainMenuScenePath);
+
+            yield return waitUntilMainMenuSceneLoadedOnShutdown;
+
+            Assert.That(!waitUntilMainMenuSceneLoadedOnShutdown.timedOut);
         }
     }
 }
