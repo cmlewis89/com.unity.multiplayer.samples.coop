@@ -1,3 +1,4 @@
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -22,6 +23,15 @@ namespace Unity.Multiplayer.Samples.BossRoom.TestUtils
             Assert.IsNotNull(buttonComponent, $"Button component not found on {buttonGameObject.name}!");
 
             buttonComponent.onClick.Invoke();
+        }
+
+        public static IEnumerator AssertIsSceneLoaded(string sceneName)
+        {
+            var waitUntilSceneLoaded = new WaitForSceneLoad(sceneName);
+
+            yield return waitUntilSceneLoaded;
+
+            Assert.That(!waitUntilSceneLoaded.timedOut);
         }
     }
 
