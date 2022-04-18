@@ -85,6 +85,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
                     var startingAction = new ActionRequestData() { ActionTypeEnum = m_StartingAction };
                     PlayAction(ref startingAction);
                 }
+                InitializeHitPoints();
             }
         }
 
@@ -102,6 +103,24 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
             {
                 m_DamageReceiver.damageReceived -= ReceiveHP;
                 m_DamageReceiver.collisionEntered -= CollisionEntered;
+            }
+        }
+
+        void InitializeHitPoints()
+        {
+            NetState.HitPoints = NetState.CharacterClass.BaseHP.Value;
+
+            if (!IsNpc)
+            {
+                SessionPlayerData? sessionPlayerData = SessionManager<SessionPlayerData>.Instance.GetPlayerData(OwnerClientId);
+                if (sessionPlayerData is {HasCharacterSpawned: true})
+                {
+                    NetState.HitPoints = sessionPlayerData.Value.CurrentHitPoints;
+                    if (NetState.HitPoints <= 0)
+                    {
+                        NetState.LifeState = LifeState.Fainted;
+                    }
+                }
             }
         }
 
@@ -178,7 +197,7 @@ namespace Unity.Multiplayer.Samples.BossRoom.Server
         /// </summary>
         /// <param name="inflicter">Person dishing out this damage/healing. Can be null. </param>
         /// <param name="HP">The HP to receive. Positive value is healing. Negative is damage.  </param>
-        public void ReceiveHP(ServerCharacter inflicter, int HP)
+        void ReceiveHP(ServerCharacter inflicter, int HP)
         {
             //to our own effects, and modify the damage or healing as appropriate. But in this game, we just take it straight.
             if (HP > 0)

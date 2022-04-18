@@ -1,39 +1,42 @@
 using System;
-using Unity.Multiplayer.Samples.BossRoom;
-using Unity.Netcode;
+using Unity.Multiplayer.Samples.BossRoom.Shared;
+using Unity.Multiplayer.Samples.BossRoom.Shared.Infrastructure;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace Unity.Multiplayer.Samples.BossRoom.Client
 {
     public class UIQuitPanel : MonoBehaviour
     {
-        [SerializeField]
-        Text m_QuitButtonText;
-
-        void OnEnable()
+        enum QuitMode
         {
-            m_QuitButtonText.text = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening ?
-                "Leave session?" :
-                "Exit Game?";
+            ReturnToMenu,
+            QuitApplication
+        }
+
+        [SerializeField]
+        QuitMode m_QuitMode = QuitMode.ReturnToMenu;
+
+        ApplicationController m_ApplicationController;
+
+
+        [Inject]
+        void InjectDependencies(ApplicationController applicationController)
+        {
+            m_ApplicationController = applicationController;
         }
 
         public void Quit()
         {
-            if (NetworkManager.Singleton.IsListening)
+            switch (m_QuitMode)
             {
-                // first disconnect then return to menu
-                var gameNetPortal = GameNetPortal.Instance;
-                if (gameNetPortal != null)
-                {
-                    gameNetPortal.RequestDisconnect();
-                }
-                SceneManager.LoadScene("MainMenu");
-            }
-            else
-            {
-                Application.Quit();
+                case QuitMode.ReturnToMenu:
+                    m_ApplicationController.LeaveSession(true);
+                    break;
+                case QuitMode.QuitApplication:
+                    m_ApplicationController.QuitGame();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             gameObject.SetActive(false);
